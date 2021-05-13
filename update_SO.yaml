@@ -1,0 +1,57 @@
+---
+- name: upgrade all packages
+  hosts: ""
+  become: true
+  vars:
+    package: open-vm-tools
+  tasks:
+    - name: UPDATA - SUSE
+      zypper:
+        name: "{{ package }}"
+        state: latest
+      when:  ansible_distribution == "SLES"
+
+    - name: UPDATA - CentOS 
+      yum:
+        name: "{{ package }}"
+        state: latest
+      when:
+        - ansible_distribution == "CentOS"
+
+    - name: UPDATA - Oracle Linux 
+      yum:
+        name: "{{ package }}"
+        state: latest
+      when:
+        - ansible_distribution == "OracleLinux"
+...
+
+
+
+---------------------------------------------------------
+
+---
+- name: test upgrade
+  hosts: "testup"
+  become: true
+  vars:
+    package: open-vm-tools
+  tasks:
+    - name: UPDAT SUSE
+      debug:
+        msg: "{{ package }}"  "SUSE"
+      when:
+        - ansible_distribution == "SLES"
+
+    - name: UPDAT SUSE
+      debug:
+        msg: "{{ package }} centos"
+      when:
+        - ansible_distribution == "CentOS"
+
+    - name: UPDAT SUSE
+      debug:
+        msg: "{{ package }}  oracle "
+      when:
+        - ansible_distribution == "OracleLinux"
+...
