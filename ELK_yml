@@ -1,0 +1,29 @@
+--- 
+- name: Install ELK 
+  hosts: 
+  become: true
+  vars: 
+    elastic: /home/luiz.pereira/ansible/roles/elk/files/elasticsearch-7.12.1-x86_64.rpm
+    filebeat: /home/luiz.pereira/ansible/roles/elk/files/filebeat-7.12.1-x86_64.rpm
+    heartbeat: /home/luiz.pereira/ansible/roles/elk/files/heartbeat-7.12.1-x86_64.rpm
+    kibana: /home/luiz.pereira/ansible/roles/elk/files/kibana-7.12.1-aarch64.rpm
+    logstash: /home/luiz.pereira/ansible/roles/elk/files/logstash-7.12.1-x86_64.rpm
+    nginx:  /home/luiz.pereira/ansible/roles/elk/files/nginx-1.14.2-1.el7_4.ngx.x86_64.rpm
+    install_dir: /data/files
+  tasks: 
+    - name: Create dir
+      file:
+        path: "{{ install_dir }}"
+        state:  directory
+        mode: '0755'
+
+    - name: Copy files to install
+      copy:
+        src: "{{ item.rpm }}"
+        dest:  "{{ item.install_dir }}"
+      with_items:
+        - {src: "{{ elastic }}" , dest: "{{ install_dir }}" }
+        - {src: "{{ filebeat }}" , dest: "{{ install_dir }}" }
+        - {src: "{{ heartbeat }}" , dest: "{{ install_dir }}" }
+      when:
+        - inventory_hostname == ['elasticdatajud'] 
