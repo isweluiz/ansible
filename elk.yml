@@ -1,0 +1,125 @@
+--- 
+- name: Install ELK 
+  hosts: 'logstashdatajud,elasticdatajud'
+  become: true
+  vars: 
+  # Variáveis com mapeamento dos pacotes a serem instalados
+    elastic: /home/luiz.pereira/ansible/roles/elk/files/elasticsearch-7.12.1-x86_64.rpm
+    filebeat: /home/luiz.pereira/ansible/roles/elk/files/filebeat-7.12.1-x86_64.rpm
+    heartbeat: /home/luiz.pereira/ansible/roles/elk/files/heartbeat-7.12.1-x86_64.rpm
+    kibana: /home/luiz.pereira/ansible/roles/elk/files/kibana-7.12.1-aarch64.rpm
+    logstash: /home/luiz.pereira/ansible/roles/elk/files/logstash-7.12.1-x86_64.rpm
+    nginx:  /home/luiz.pereira/ansible/roles/elk/files/nginx-1.14.2-1.el7_4.ngx.x86_64.rpm
+  # Variáveis com apontamento de diretórios que serão criados para armazenar os pacotes e o dados do elastic
+    install_dir: /data/files
+    install_dir_kibana: /opt/elk
+    data_dir: /data/elasticsearch
+  tasks: 
+
+##Elastic 
+    - name: Create dir
+      file:
+        path: "{{ install_dir }}"
+        state:  directory
+        mode: '0755'
+      when:
+        - inventory_hostname == ['elasticdatajud'] 
+
+    - name: Create dir to elk 
+      file:
+        path: "{{ data_dir }}"
+        state:  directory
+        mode: '0755'
+      when:
+        - inventory_hostname == ['elasticdatajud'] 
+
+    - name: Copy files to install
+      copy:
+        src: "{{ item.src }}"
+        dest:  "{{ item.dest }}"
+      with_items:
+        - { src: "{{ elastic }}" , dest: "{{ install_dir }}" }
+        - { src: "{{ filebeat }}" , dest: "{{ install_dir }}" }
+        - { src: "{{ heartbeat }}" , dest: "{{ install_dir }}" }
+      when:
+        - inventory_hostname == ['elasticdatajud']
+
+    - name: Install elastic and beats
+      shell:
+        cmd: "{{ item }}"
+      with_items:
+        - rpm -i "{{ install_dir }}"/elasticsearch-7.12.1-x86_64.rpm
+        - rpm -i "{{ install_dir }}"/filebeat-7.12.1-x86_64.rpm
+        - rpm -i "{{ install_dir }}"/heartbeat-7.12.1-x86_64.rpm
+      when:
+        - inventory_hostname == ['elasticdatajud'] 
+  
+##Enable services
+    - name: Enable services
+      systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: true
+      with_items:
+        - elasticsearch
+        - filebeat
+        - heartbeat
+      when:
+        - inventory_hostname == ['elasticdatajud'] 
+
+##Kibana and Nginx Copy 
+    - name: Create dir 
+      file:
+        path: "{{ install_dir_kibana }}"
+        state:  directory
+        mode: '0755'
+      when:
+        - inventory_hostname == ['logstashdatajud']
+      tags: 
+        - kibana 
+
+    - name: Copy files to install
+      copy:
+        src: "{{ item.src }}"
+        dest:  "{{ item.dest }}"
+      with_items:
+        - { src: "{{ kibaba }}" , dest: "{{ install_dir_kibana }}" }
+        - { src: "{{ filebeat }}" , dest: "{{ install_dir_kibana }}" }
+        - { src: "{{ heartbeat }}" , dest: "{{ install_dir_kibana }}" }
+        - { src: "{{ logstash }}" , dest: "{{ install_dir_kibana }}" }
+        - { src: "{{ nginx }}" , dest: "{{ install_dir_kibana }}" }
+      when:
+        - inventory_hostname == ['logstashdatajud']
+      tags: 
+        - kibana 
+
+### Kibana install
+    - name: Install heartbeat | filebeat | kibana | nginx
+      shell:
+        cmd:  "{{ item }}"
+      with_items:
+          - rpm -i "{{ install_dir_kibana }}"/heartbeat-7.12.1-x86_64.rpm
+          - rpm -i "{{ install_dir_kibana }}"/kibana-7.12.1-aarch64.rpm
+          - rpm -i "{{ install_dir_kibana }}"/logstash-7.12.1-x86_64.rpm
+          - rpm -i "{{ install_dir_kibana }}"/nginx-1.14.2-1.el7_4.ngx.x86_64.rpm
+      when:
+        - inventory_hostname == ['logstashdatajud'] 
+      tags: 
+        - kibana
+
+##Enable services
+    - name: Enable services
+      systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: true
+      with_items:
+        - logstash
+        - filebeat
+        - heartbeat
+        - nginx
+      when:
+        - inventory_hostname == ['logstashdatajud']
+      tags: 
+        - kibana
+...
