@@ -1,0 +1,8 @@
+---
+wso2pkg1: java
+wso2pkg2: wget
+wso2_dir: /opt/apm
+wso2_zip: https://lab-tec.s3.amazonaws.com/wso2am-3.2.0.zip
+wso2_init: https://raw.githubusercontent.com/isweluiz/wso2/main/wso2
+wso2_service: https://raw.githubusercontent.com/isweluiz/wso2/main/wso2.service
+wso2_motd: https://raw.githubusercontent.com/isweluiz/wso2/main/motd_wso2
