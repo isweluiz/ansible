@@ -1,0 +1,20 @@
+sed -i "/^grails.serverURL/c grails.serverURL = ${RUNDECK_URL}" /etc/rundeck/rundeck-config.properties
+sed -i "/^framework.server.url/c framework.server.url = ${RUNDECK_URL}" /etc/rundeck/framework.properties
+sed -i '/^RDECK_JVM="$RDECK_JVM/ s/"$/ -Dserver.web.context=\/rundeck"/' /etc/rundeck/profile
+
+
+
+
+
+
+NGINX 
+
+     location /rundeck/ {
+      access_log  /var/log/nginx/rundeck.access.log;
+      error_log   /var/log/nginx/rundeck.error.log;
+      proxy_ignore_client_abort on;
+      proxy_pass http://localhost:4440;
+      proxy_set_header X-Forwarded-Host $host:$server_port;
+      proxy_set_header X-Forwarded-server $host;
+      proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
