@@ -1,0 +1,21 @@
+---
+- name: instal firewall
+  dnf:
+    name: "{{ fw_package }}"
+    state: latest
+  tags: production
+
+- name: start fw_service 
+  systemd:
+    name: "{{ fw_service }}"
+    state: started 
+  tags: production
+
+- name: create new role
+  firewalld: 
+    service: http
+    state: enabled
+    permanent: true
+    immediate: true
+  tags: production
+...

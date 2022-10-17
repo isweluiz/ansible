@@ -1,0 +1,40 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    
+    - name: copy report
+      copy: 
+        src: report.txt
+        dest: /opt/report.txt
+
+    - name: CHANGE parameers
+      lineinfile:
+        path: /opt/report.txt
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        backup: yes 
+      with_items: 
+        - { regexp: '^HOST=' , line: 'HOST={{ ansible_hostname }}' }
+        - { regexp: '^MEMORY=' , line: 'MEMORY={{ ansible_memory_mb.real.total }}' }
+        - { regexp: '^BIOS=' , line: 'BIOS={{ ansible_bios_version }}' }
+        - { regexp: '^VDA_*' , line: 'VDA_DISK_SIZE={{ ansible_devices.xvda.size }}'}
+        - { regexp: '^VDB_*' , line: 'VDB_DISK_SIZE={{ ansible_devices.xvda.size }}' } 
+      ignore_errors: yes 
+
+    - name: conditional VDA
+      lineinfile:
+        path: /opt/report.txt
+        regexp: "^VDA_DISK_*"
+        line: "^VDA_DISK_SIZE=NONE"
+      when: 
+        - ansible_devices.xvda is not defined 
+
+    - name: conditional VDB
+      lineinfile:
+        path: /opt/report.txt
+        regexp: "^VDB_DISK_*"
+        line: "^VDB_DISK_SIZE=NONE"
+      when: 
+        - ansible_devices.xvdb is not defined 
+...

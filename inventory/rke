@@ -1,0 +1,18 @@
+############# GROUPS #############
+[k8s:children]
+masters
+etcd
+workers
+
+[etcd:children]
+masters
+
+[workers:children]
+masters
+
+############# SERVERS #############
+[masters]
+212.71.255.129 ansible_user=root ansible_hostname=node1 # 192.168.202.98
+212.71.255.155 ansible_user=root ansible_hostname=node2 # 192.168.147.123
+212.71.255.158 ansible_user=root ansible_hostname=node3 # 192.168.163.141
+176.58.121.208 ansible_user=root ansible_hostname=node4 # 192.168.163.141

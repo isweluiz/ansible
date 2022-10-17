@@ -1,0 +1,52 @@
+---
+- name: Create new users
+  hosts: all
+  become: true
+  vars_files:
+    - lock.yml
+    - users_list.yml
+  tasks:
+    - name: Create users that start with uid 1
+      user:
+        name: "{{ item.username }}"
+        password: "{{ pw_dev | password_hash('sha512') }}"
+        group: wheel 
+        shell: /bin/bash
+      with_items:
+        - "{{ users }}"
+      when:
+        - ( item.uid | string )[0] == '1'
+        - inventory_hostname in groups['dev'] or inventory_hostname in groups['test']
+
+    - name: Create users that start with uid 2
+      user:
+        name: "{{ item.username }}"
+        group: wheel
+        password: "{{ pw_mgr | password_hash('sha512') }}"
+        shell: /bin/bash
+      with_items:
+        - "{{ users }}"
+      when: 
+        - ( item.uid | string )[0] == '2' and inventory_hostname in groups['proxy']
+
+    - name: SSH UID 1
+      authorized_key:
+        user: "{{ item.username }}"
+        key: "{{lookup('file','id_rsa.pub') }}"
+        state: present
+      with_items:
+        - "{{ users }}"
+      when:
+        - ( item.uid | string )[0] == '1'
+        - inventory_hostname in groups['dev'] or inventory_hostname in groups['test']
+
+    - name: SSH UID 2
+      authorized_key:
+        user: "{{ item.username }}"
+        key: "{{lookup('file','id_rsa.pub') }}"
+        state: present
+      with_items:
+        - "{{ users }}"
+      when:
+        - ( item.uid | string )[0] == '2' and  inventory_hostname in groups['proxy']
+...          

@@ -1,0 +1,47 @@
+---
+- name: Deploy tomcat iiq 
+  hosts: 
+  become: true
+  tasks:
+    - name: Copy jar 
+      copy:
+        src:  /data/ansible/playbooks/files/iiq/iiqpetrobrascommons.jar
+        dest: /iiq/tomcat/webapps/identityiq/WEB-INF/lib/iiqpetrobrascommons.jar
+        mode: u+rwx,g+rwx,o+r
+        backup: yes 
+        
+    - name: Copy messages | iiqCustom_en_US.properties
+      copy:
+        src:  /data/ansible/playbooks/files/iiq/messages/iiqCustom_en_US.properties
+        dest: /iiq/tomcat/webapps/identityiq/WEB-INF/classes/sailpoint/web/messages/
+        mode: u+rwx,g+rwx,o+r
+        backup: yes 
+
+    - name: Copy messages | iiqCustom_es.properties
+      copy:
+        src:  /data/ansible/playbooks/files/iiq/messages/iiqCustom_es.properties
+        dest: /iiq/tomcat/webapps/identityiq/WEB-INF/classes/sailpoint/web/messages/
+        mode: u+rwx,g+rwx,o+r
+        backup: yes 
+
+    - name: Copy messages | iiqCustom.properties
+      copy:
+        src:  /data/ansible/playbooks/files/iiq/messages/iiqCustom.properties
+        dest: /iiq/tomcat/webapps/identityiq/WEB-INF/classes/sailpoint/web/messages/
+        mode: u+rwx,g+rwx,o+r
+        backup: yes 
+
+    - name: Copy messages | iiqCustom_pt_BR.properties
+      copy:
+        src:  /data/ansible/playbooks/files/iiq/messages/iiqCustom_pt_BR.properties
+        dest: /iiq/tomcat/webapps/identityiq/WEB-INF/classes/sailpoint/web/messages/
+        mode: u+rwx,g+rwx,o+r
+        backup: yes 
+
+    - name: restart servers
+      systemd:
+          name: tomcat
+          state: restarted 
+        
+
+

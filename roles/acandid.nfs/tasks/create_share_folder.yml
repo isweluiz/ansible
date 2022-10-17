@@ -1,0 +1,10 @@
+---
+- name: Create Share folder
+  file:
+    path: "/{{ nfs_share }}"
+    state: directory
+    group: "{{ nfs_group_name }}"
+    owner: nfsnobody
+    mode: 02775
+    recurse: yes
+...

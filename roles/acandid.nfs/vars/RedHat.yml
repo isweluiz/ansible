@@ -1,0 +1,8 @@
+---
+nfs_server_package: nfs-utils
+##
+##
+nfs_server_services:
+  - rpcbind
+  - nfs-server
+#

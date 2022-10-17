@@ -1,0 +1,8 @@
+---
+- hosts: rabbitmq
+  become: true
+  roles: 
+    - name: rabbitmq
+      when: ansible_os_family == 'Debian'
+
+...

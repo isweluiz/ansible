@@ -1,0 +1,45 @@
+---
+# tasks file for roles/k8s-single-master
+
+### Config user
+- name: "Create {{ k8s_user }} user"
+  user: 
+    name: "{{ k8s_user }}"
+    comment: "Service user account"
+    append: yes 
+    state: present 
+    createhome: yes 
+    shell: /bin/bash
+
+- name: "SSH Set authorized_keys"
+  authorized_key:
+    user: "{{ k8s_user }}"
+    state: present
+    key: "{{ lookup('file', '{{ item }}') }}"
+  ignore_errors: "{{ ansible_check_mode }}"  
+  with_items:
+    - "{{ k8s_ssh_pub_key }}"
+
+- name: "Allow {{ k8s_user }} to use sudo"
+  lineinfile:
+    dest: "/etc/sudoers"
+    line: '{{ k8s_user }} ALL=(ALL) NOPASSWD: ALL'
+    validate: 'visudo -cf %s'
+
+## Install k8s and configure - Debian and Ubuntu Distribution
+- import_tasks: debian_install_k8s.yml
+  when: 
+    - ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+
+- import_tasks: debian_masters_config.yml
+  when: 
+    - ansible_distribution == "Debian" or ansible_distribution == "Ubuntu" 
+    - inventory_hostname in groups["masters"]
+
+- import_tasks: debian_join_workers.yml
+  when: 
+    - ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+    - inventory_hostname in groups["workers"]
+
+# when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+

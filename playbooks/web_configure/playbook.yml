@@ -1,0 +1,49 @@
+---
+- name: Configure webservers
+  hosts: webservers
+  become: true
+  tasks:
+    - name: block the error  
+      block:
+      - include: install_packages.yml
+        vars:
+          memory: 256
+          web_package: httpd
+          ssl_package: mod_ssl
+
+      - include: configure_web.yml
+        vars:
+          https_uri: https://raw.githubusercontent.com/isweluiz/ansible/master/copy-files.yaml
+          ssl_uri: http://downloads.mysql.com/source/dbt2-0.37.50.3.tar.gz
+          
+      - include: configure_firewall.yml
+        vars:
+          fw_package: firewalld
+          fw_service: firewalld
+        tags: production
+
+      rescue:
+      - debug: 
+          msg: "Install packages manual"
+
+      - dnf: 
+          name: httpd
+          state: latest
+        notify: 
+          - restart_services
+
+
+      always: 
+      - shell:
+          cmd: systemctl status httpd
+
+  handlers:
+    - name: restart_services
+      systemd:
+        name: "{{ item }}"
+        state: restarted
+      with_items:
+        - httpd
+        - firewalld
+... 
+

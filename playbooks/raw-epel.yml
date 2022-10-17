@@ -1,0 +1,12 @@
+---
+- name: install epel
+  hosts: all
+  become: true
+  tasks:
+    - name: EPEL
+      raw: dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y 
+    - name: Update
+      raw: yum update -y 
+
+    - name: install python and vim
+      raw: dnf install python36 vim -y 

@@ -1,0 +1,10 @@
+---
+- name: "Insert rule in iptables for Zabbix"
+  hosts: OPENSHIFT-HMG
+  tasks:
+
+  - name: "Add rule"
+    raw: iptables -I INPUT 5 -p tcp -m tcp --dport 10050 -j ACCEPT
+
+  - name: "Iptables save rule"
+    raw: iptables-save > /etc/sysconfig/iptables

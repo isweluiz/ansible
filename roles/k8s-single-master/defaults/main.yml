@@ -1,0 +1,21 @@
+---
+# defaults file for roles/k8s-single-master
+
+# VARS
+
+### User 
+k8s_user: kube 
+k8s_ssh_pub_key: "~/.ssh/id_rsa.pub"
+### Service 
+k8s_apiserver_advertise_address: "192.168.99.110"
+k8s_pod_network_cidr: "192.168.0.0/16"
+
+### Package 
+#k8s_version: "1.23.4-00"
+k8s_version: "1.20.1-00"
+k8s_kubelet: "kubelet={{ k8s_version }}"
+k8s_kubeadm: "kubeadm={{ k8s_version }}"
+k8s_kubectl: "kubectl={{ k8s_version }}"
+k8s_network_calico: "https://docs.projectcalico.org/v3.14/manifests/calico.yaml"
+# https://kubernetes.io/releases/#:~:text=The%20Kubernetes%20project%20maintains%20release,9%20months%20of%20patch%20support.
+#  kubeadm init --apiserver-advertise-address=192.168.99.110 --pod-network-cidr=192.168.0.0/16 --ignore-preflight-errors=all

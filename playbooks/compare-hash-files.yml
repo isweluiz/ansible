@@ -1,0 +1,78 @@
+### Hash compare 1 
+
+vim playbooks/files.yml 
+
+files:
+  - file: /opt/file_compare1.tar
+    checksum: 9cd599a3523898e6a12e13ec787da50a  /opt/file_compare1.tar
+  - file: /opt/file_compare2.tar.gz
+    checksum: d41d8cd98f00b204e9800998ecf8427e  /opt/file_compare2.tar.gz
+
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - files3.yml
+  tasks:
+    - stat:
+        path: "{{ item.file }}"
+        checksum_algorithm: md5
+      loop: "{{ files }}"
+      register: stat_results
+
+    - name: NOT changed files
+      debug:
+        msg: "NOT changed: {{ item.stat.path }}"
+      when: item.stat.checksum ==  item.item.checksum.split()|first
+      loop: "{{ stat_results.results }}"
+      loop_control:
+        label: "{{ item.stat.path }}"
+
+    - name: Changed files
+      debug:
+        msg: "CHANGED: {{ item.stat.path }}"
+      when: item.stat.checksum != item.item.checksum.split()|first
+      loop: "{{ stat_results.results }}"
+      loop_control:
+        label: "{{ item.stat.path }}"
+
+
+### Hash compare 2 
+
+vim playbooks/files.yml 
+
+files:
+  - name: /opt/file_compare1.tar
+    checksum: 9cd599a3523898e6a12e13ec787da50a
+  - name: /opt/file_compare2tar.gz
+    checksum: d41d8cd98f00b204e9800998ecf8427e
+    
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - files.yml
+  tasks:
+    - stat:
+        path: "{{ item.file }}"
+        checksum_algorithm: md5
+      loop: "{{ files }}"
+      register: stat_results
+
+    - name: NOT changed files
+      debug:
+        msg: "NOT changed: {{ item.stat.path }}"
+      when: item.stat.checksum == item.item.checksum
+      loop: "{{ stat_results.results }}"
+      loop_control:
+        label: "{{ item.stat.path }}"
+
+    - name: Changed files
+      debug:
+        msg: "CHANGED: {{ item.stat.path }}"
+      when: item.stat.checksum != item.item.checksum
+      loop: "{{ stat_results.results }}"
+      loop_control:
+        label: "{{ item.stat.path }}"

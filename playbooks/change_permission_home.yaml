@@ -1,0 +1,86 @@
+---
+- name: Change permissions
+  hosts: localhost
+  connection: local
+  become: true
+  vars: 
+    config_home_mode: "0750"
+    config_home_match: "0755"
+  tasks:
+
+# Get the list of directories inside path... 
+    - name: "Get the list of directories"
+      find:
+        paths: "/tmp/home"
+        # excludes: "nexpose"
+        recurse: no
+        file_type: directory
+      register: found_directories
+
+    - name: "DUMP List of directories"
+      debug:
+        msg: 
+         - "Directory: {{ item.path }}" 
+         - "Mode: {{ item.mode }}"
+      with_items: "{{ found_directories.files }}"      
+
+    - name: "Change the directories permission"
+      file:
+        path: "{{ item.path }}"
+        mode: "{{ config_home_mode }}"
+      with_items: "{{ found_directories.files }}"  
+      when: item.mode == config_home_match 
+        
+
+# $ ls -la /tmp/home/
+# total 28
+# drwxrwxr-x  5 lpereira lpereira  4096 Jun 24 14:22 .
+# drwxrwxrwt 39 root     root     12288 Jun 24 14:31 ..
+# drwxrw-rw-  2 luiz     luiz      4096 Jun 24 14:22 luiz
+# drwxrwxr-x  2 paulo    paulo     4096 Jun 24 14:22 paulo
+# drwxrwxrwx  2 pedro    pedro     4096 Jun 24 14:22 pedro
+
+# $ ap playbooks/check-perm-config.yml 
+
+# PLAY [Change permissions] ***********************************************************************************************************************************************************************************************************
+
+# TASK [Gathering Facts] **************************************************************************************************************************************************************************************************************
+# ok: [localhost]
+
+# TASK [Get the list of directories] **************************************************************************************************************************************************************************************************
+# ok: [localhost]
+
+# TASK [DUMP List of directories] *****************************************************************************************************************************************************************************************************
+# ok: [localhost] => (item={'path': '/tmp/home/luiz', 'mode': '0766', 'isdir': True, 'ischr': False, 'isblk': False, 'isreg': False, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1004, 'gid': 1005, 'size': 4096, 'inode': 29123031, 'dev': 64769, 'nlink': 2, 'atime': 1656077470.6332905, 'mtime': 1656076947.7835858, 'ctime': 1656077436.8711748, 'gr_name': 'luiz', 'pw_name': 'luiz', 'wusr': True, 'rusr': True, 'xusr': True, 'wgrp': True, 'rgrp': True, 'xgrp': False, 'woth': True, 'roth': True, 'xoth': False, 'isuid': False, 'isgid': False}) => {
+#     "msg": [
+#         "/tmp/home/luiz"
+#     ]
+# }
+# ok: [localhost] => (item={'path': '/tmp/home/pedro', 'mode': '0777', 'isdir': True, 'ischr': False, 'isblk': False, 'isreg': False, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1004, 'size': 4096, 'inode': 29123032, 'dev': 64769, 'nlink': 2, 'atime': 1656077466.5815005, 'mtime': 1656076950.2316906, 'ctime': 1656077427.8197353, 'gr_name': 'pedro', 'pw_name': 'pedro', 'wusr': True, 'rusr': True, 'xusr': True, 'wgrp': True, 'rgrp': True, 'xgrp': True, 'woth': True, 'roth': True, 'xoth': True, 'isuid': False, 'isgid': False}) => {
+#     "msg": [
+#         "/tmp/home/pedro"
+#     ]
+# }
+# ok: [localhost] => (item={'path': '/tmp/home/paulo', 'mode': '0775', 'isdir': True, 'ischr': False, 'isblk': False, 'isreg': False, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1006, 'gid': 1006, 'size': 4096, 'inode': 29131223, 'dev': 64769, 'nlink': 2, 'atime': 1656077467.35346, 'mtime': 1656076952.7197974, 'ctime': 1656077459.489878, 'gr_name': 'paulo', 'pw_name': 'paulo', 'wusr': True, 'rusr': True, 'xusr': True, 'wgrp': True, 'rgrp': True, 'xgrp': True, 'woth': False, 'roth': True, 'xoth': True, 'isuid': False, 'isgid': False}) => {
+#     "msg": [
+#         "/tmp/home/paulo"
+#     ]
+# }
+
+# TASK [Change the directories permission] ********************************************************************************************************************************************************************************************
+# changed: [localhost] => (item={'path': '/tmp/home/luiz', 'mode': '0766', 'isdir': True, 'ischr': False, 'isblk': False, 'isreg': False, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1004, 'gid': 1005, 'size': 4096, 'inode': 29123031, 'dev': 64769, 'nlink': 2, 'atime': 1656077470.6332905, 'mtime': 1656076947.7835858, 'ctime': 1656077436.8711748, 'gr_name': 'luiz', 'pw_name': 'luiz', 'wusr': True, 'rusr': True, 'xusr': True, 'wgrp': True, 'rgrp': True, 'xgrp': False, 'woth': True, 'roth': True, 'xoth': False, 'isuid': False, 'isgid': False})
+# changed: [localhost] => (item={'path': '/tmp/home/pedro', 'mode': '0777', 'isdir': True, 'ischr': False, 'isblk': False, 'isreg': False, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1002, 'gid': 1004, 'size': 4096, 'inode': 29123032, 'dev': 64769, 'nlink': 2, 'atime': 1656077466.5815005, 'mtime': 1656076950.2316906, 'ctime': 1656077427.8197353, 'gr_name': 'pedro', 'pw_name': 'pedro', 'wusr': True, 'rusr': True, 'xusr': True, 'wgrp': True, 'rgrp': True, 'xgrp': True, 'woth': True, 'roth': True, 'xoth': True, 'isuid': False, 'isgid': False})
+# changed: [localhost] => (item={'path': '/tmp/home/paulo', 'mode': '0775', 'isdir': True, 'ischr': False, 'isblk': False, 'isreg': False, 'isfifo': False, 'islnk': False, 'issock': False, 'uid': 1006, 'gid': 1006, 'size': 4096, 'inode': 29131223, 'dev': 64769, 'nlink': 2, 'atime': 1656077467.35346, 'mtime': 1656076952.7197974, 'ctime': 1656077459.489878, 'gr_name': 'paulo', 'pw_name': 'paulo', 'wusr': True, 'rusr': True, 'xusr': True, 'wgrp': True, 'rgrp': True, 'xgrp': True, 'woth': False, 'roth': True, 'xoth': True, 'isuid': False, 'isgid': False})
+
+# PLAY RECAP **************************************************************************************************************************************************************************************************************************
+# localhost                  : ok=4    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+
+
+# $ ls -la /tmp/home/
+# total 28
+# drwxrwxr-x  5 lpereira lpereira  4096 Jun 24 14:37 .
+# drwxrwxrwt 39 root     root     12288 Jun 24 14:38 ..
+# drwxr-x---  2 luiz     luiz      4096 Jun 24 14:22 luiz
+# drwxr-x---  2 paulo    paulo     4096 Jun 24 14:22 paulo
+# drwxr-x---  2 pedro    pedro     4096 Jun 24 14:22 pedro

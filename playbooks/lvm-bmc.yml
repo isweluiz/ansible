@@ -1,0 +1,93 @@
+---
+#PLAYBOOK criado para atender a requisição WO0000.....
+#Autor: Luiz E. 
+
+- hosts: 'bmchmg:!01'
+  become: true
+  vars:
+    device_new: sdc
+    vg_extend: rhel
+    lv_extend: opt
+    mount_point: /opt
+  tasks:
+    - name: Create a new partition
+      parted:
+        device: /dev/{{ device_new }}
+        number: 1
+        part_end: 100%
+        state: present
+      when:
+        - ansible_devices.sdc is defined
+
+    - name: create a pv
+      shell:
+        cmd: pvcreate /dev/{{ device_new }}1
+
+    - name: expand a volume group
+      shell:
+        cmd: vgextend {{ vg_extend }} /dev/{{ device_new }}1
+      when:
+        - ansible_lvm.vgs.{{ vg_extend }} is defined
+
+    - name: expand a volume group
+      shell:
+        cmd: lvextend -l +100%FREE /dev/{{ vg_extend }}/{{ lv_extend }}
+      when:
+        - ansible_lvm.lvs.opt is defined
+
+    - name: expand disk opt
+      shell:
+        cmd: xfs_growfs {{ mount_point }}
+    - shell:
+        cmd: df -lhT /opt
+      register: opt_disk
+    - debug:
+        msg: "{{ opt_disk }}"
+
+          #---
+- hosts: 07
+  become: true
+  vars:
+    device_new: sdc
+    vg_extend: rhel
+    lv_extend: root
+    mount_point: /
+
+  tasks:
+    - name: Create a new partition
+      parted:
+        device: /dev/{{ device_new }}
+        number: 1
+        part_end: 100%
+        state: present
+      tags: bmc7
+    - name: create a pv
+      shell:
+        cmd: pvcreate /dev/{{ device_new }}1
+      tags: bmc7
+    - name: expand a volume group
+      shell:
+        cmd: vgextend {{ vg_extend }} /dev/{{ device_new }}1
+      when:
+        - ansible_lvm.vgs.{{ vg_extend }} is defined
+      tags: bmc7
+    - name: expand a volume group
+      shell:
+        cmd: lvextend -l +100%FREE /dev/{{ vg_extend }}/{{ lv_extend }}
+      when:
+        - ansible_lvm.lvs.opt is defined
+      tags: bmc7
+
+    - name: expand disk root
+      shell:
+        cmd: xfs_growfs {{ mount_point }}
+      tags: bmc7
+
+    - shell:
+        cmd: df -lhT /
+      register: root_disk
+
+    - debug:
+        msg: "{{ root_disk }}"
+      tags: bmc7
+...

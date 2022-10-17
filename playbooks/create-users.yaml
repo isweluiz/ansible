@@ -1,0 +1,16 @@
+--- 
+- hosts: webservers
+  become: yes
+  tasks:
+    - name: Criar uma lista de usuários
+      user:
+        name: "{{ item }}"
+        state: present
+        groups: wheel
+      loop:
+        - luiz.eduado
+        - joao.pedro
+        - julio.cena
+        - carlos.alberto
+        
+

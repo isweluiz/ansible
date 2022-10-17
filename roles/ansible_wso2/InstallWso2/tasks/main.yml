@@ -1,0 +1,72 @@
+---
+- name: Install Java and Wget 
+  yum:
+    name: 
+      - "{{ wso2pkg1 }}"
+      - "{{ wso2pkg2 }}"
+    state: present 
+
+- name: Create directory
+  file:
+    path: "{{ wso2_dir }}"
+    state: directory 
+
+- name: Unarchive WSO2 file 
+  unarchive:
+    src: "{{wso2_zip }}"
+    dest: "{{ wso2_dir }}"
+    remote_src: true
+
+
+- name: Download wso2 init
+  get_url:
+    url: "{{ wso2_init }}"
+    dest: /etc/init.d/wso2
+    mode: '770'
+
+- name: Download wso2 service 
+  get_url:
+    url: "{{ wso2_service }}"
+    dest: /etc/systemd/system/wso2.service
+    mode: '770'
+
+- name: Create user WSO2
+  user:
+    name: wso2
+    state: present
+
+- name: Change permissions
+  file:
+    path: /opt/apm
+    recurse: true
+    owner: wso2
+    group: wso2
+
+- name: Create symbolic link
+  file:
+    src: "{{ wso2_dir }}/wso2am-3.2.0"
+    dest: /opt/apm/wso2
+    state: link 
+
+- name: Get IP 
+  shell:
+    cmd: ip="$(curl -s ifconfig.me | awk "{print $1}")"
+
+
+- name: Change IP configurations
+  shell:
+    cmd: sed -i "s/localhost/$ip/g" /opt/apm/wso2/repository/conf/deployment.toml
+
+- name: Download wso2 motd
+  get_url:
+    url: "{{ wso2_motd }}"
+    dest: /etc/motd
+    mode: '770'
+
+- name: Start service
+  systemd:
+    name: wso2
+    state: started
+    daemon_reload: true
+    enabled: true 
+...

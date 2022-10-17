@@ -1,0 +1,10 @@
+---
+- name: Create Mount point
+  file:
+    path: "{{ nfs_mount_point }}"
+    state: directory
+    group: "{{ nfs_group_name }}"
+    owner: nfsnobody
+    mode: 02775
+    recurse: yes
+...

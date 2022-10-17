@@ -1,0 +1,26 @@
+---
+- name: ensure postgresql is ready
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+
+- name: create postgresql database
+  community.postgresql.postgresql_db:
+    name: "{{ netbox_database }}"
+  become: true
+  become_user: "{{ netbox_postgresql_user }}"
+
+- name: create postgresql user
+  community.postgresql.postgresql_user:
+    name: "{{ netbox_database_user }}"
+    password: "{{ netbox_database_password }}"
+    encrypted: true
+    db: "{{ netbox_database }}"
+    priv: ALL
+  become: true
+  become_user: "{{ netbox_postgresql_user }}"
+
+- name: ensure redis is ready
+  ansible.builtin.service:
+    name: "{{ netbox_redis_service }}"
+    state: started

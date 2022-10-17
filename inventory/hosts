@@ -1,0 +1,30 @@
+
+############# GROUPS #############
+[environment:children]
+k8s
+rabbitmq
+
+[k8s:children]
+masters
+workers
+
+[rabbitmq:children]
+rabbitmq_nodes
+
+############# SERVERS #############
+[masters]
+#master  ansible_host="192.168.0.185" 
+master  ansible_host="192.168.99.10" 
+
+[workers]
+worker1 ansible_host="192.168.99.11" 
+worker2 ansible_host="192.168.99.12"
+
+[rabbitmq_nodes]
+rabbit-001  ansible_host="192.168.99.101" 
+rabbit-002  ansible_host="192.168.99.102" 
+rabbit-003  ansible_host="192.168.99.103" 
+
+############# VARS #############
+[k8s:vars]
+ansible_user="k8s"

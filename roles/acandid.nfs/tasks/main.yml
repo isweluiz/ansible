@@ -1,0 +1,40 @@
+---
+# tasks file for nfs
+- name: Include Variables
+  include_vars: RedHat.yml
+#
+- name: Import task install_nfs_server.yml
+  import_tasks: install_nfs_server.yml
+  tags: install_nfs
+#
+- name: Import task start_and_enable_services.yml
+  import_tasks: start_and_enable_services.yml
+  when: inventory_hostname in groups['nfs_server']
+  tags: start_nfs
+#
+- name: Import task create_group_owner.yml
+  import_tasks: create_group_owner.yml
+  tags: create_group
+#
+- name: Import task create_share_folder.yml
+  import_tasks: create_share_folder.yml
+  when: inventory_hostname in groups['nfs_server']
+  tags: create_share
+#
+- name: Import task create_exports_file.yml
+  import_tasks: create_exports_file.yml
+  when: inventory_hostname in groups['nfs_server']
+  tags: create_file
+#######
+# Mount share in client
+#
+- name: Import task create_mount_point.yml
+  import_tasks: create_mount_point.yml
+  when: inventory_hostname in groups['client']
+  tags: mount_point
+#
+- name: Import task mount_share.yml
+  import_tasks: mount_share.yml
+  when: inventory_hostname in groups['client']
+  tags: mount
+...

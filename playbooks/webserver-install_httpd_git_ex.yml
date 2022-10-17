@@ -1,0 +1,38 @@
+---
+- name: Install {{ package_httpd }} and {{ package_git }}
+  hosts: webserver
+  become: true
+  vars:
+    package_git: git 
+    package_httpd: httpd 
+  tasks: 
+    - name: Deploy {{ package_httpd }} and {{ package_git }}on {{ inventory_hostname }}
+      yum:
+        name: "{{ item }}"
+        state: present 
+      loop:
+        - "{{ package_git }}"
+        - "{{ package_httpd }}"
+      when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+      tags: 
+        - always 
+        - webserver
+
+    - name: Deploy {{ package_git }} on {{ inventory_hostname }}
+      yum:
+        name: "{{ package_git }}"
+        state: present
+      when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+      tags:
+        - never 
+        - git 
+
+    - name: Deploy {{ package_httpd }} on {{ inventory_hostname }}
+      yum:
+        name: "{{ package_httpd }}"
+        state: present
+      when: ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+      tags:
+        - never
+        - httpd 
+...

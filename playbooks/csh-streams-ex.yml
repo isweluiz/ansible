@@ -1,0 +1,47 @@
+---
+- name: Deploy new components
+  hosts: webserver,backup
+  become: true
+  vars:
+    csh_package: csh
+    stream_file: /opt/stream_file
+  tasks:
+    - name: Deploy {{ csh_package }}
+      yum: 
+        name: "{{ csh_package }}"
+        state: present
+      when: inventory_hostname in groups['webserver']
+      tags:
+        - deploy_csh
+
+    - name: Deploy {{ stream_file }}
+      copy:
+        content: "{{ stream_content }}"
+        dest: "{{ stream_file }}"
+        mode: 776
+      when: inventory_hostname in groups['backup']
+      register: stream_populate
+      tags:
+        - deploy_stream
+
+    - name: Check stream content
+      shell:
+        cmd: cat {{ stream_file }}
+      register: stream_data
+      when: 
+        - stream_populate.changed
+        - inventory_hostname in groups['backup']
+      tags:
+        - deploy_stream
+    - name: Debug check stream content
+      debug:
+        msg: "{{ stream_data }}"
+      when: 
+        - stream_data is defined 
+        - inventory_hostname in groups['backup']
+      tags: 
+        - deploy_stream
+
+
+...
+

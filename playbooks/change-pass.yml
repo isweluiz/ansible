@@ -1,0 +1,26 @@
+---
+- hosts: jbosseap
+  become: yes
+  tasks:
+  vars_files:
+    - secret.yml
+    - name: Change user password
+      user:
+        name: "{{ item.name }}" 
+        update_password: always
+        password: "{{ item.pw | password_hash('sha512') }}"
+        with_items: "{{ user_update }}" 
+        
+-------------------
+
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Change user password
+      user:
+        name: admin
+        update_password: always
+        password: "{{ newpassword|password_hash('sha512') }}"
+        
+ansible-playbook -i hostfile change-password.yml --extra-vars newpassword=12345678

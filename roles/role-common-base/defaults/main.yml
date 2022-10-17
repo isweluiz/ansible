@@ -1,0 +1,42 @@
+timezone: America/Sao_Paulo
+ozzy_pass_sha256: "a551381a3c7967d5d49b6a72f05cbf661490a11b0c4b1b10870dbe1bba3a15ac"
+root_pass_sha256: "a551381a3c7967d5d49b6a72f05cbf661490a11b0c4b1b10870dbe1bba3a15ac"
+
+common_packages_redhat:
+  - "@Development tools"
+  - bind-utils
+  - bc
+  - bzip2
+  - curl
+  - elinks
+  - git
+  - htop
+  - iperf3
+  - iptraf
+  - lsof
+  - lynx
+  - mtr
+  - net-tools
+  - nmap
+  - pv
+  - screen
+  - tcpdump
+  - telnet
+  - unzip
+  - vim
+  - wget
+  - aspell
+  - bash-completion
+  - tree
+
+common_packages_debian:
+  - build-essential
+  - net-tools
+#  - bc
+  - sudo
+#  - screen
+#- tcpdump
+  - telnet
+  - nmap
+  - vim
+  - tree

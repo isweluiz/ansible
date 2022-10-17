@@ -1,0 +1,10 @@
+---
+- name: transfer ssh key 
+  hosts: all
+  become: true
+  tasks:
+    - authorized_key:
+        user: "{{ user }}"
+        key: "{{lookup,('file','/root/.ssh/id_rsa.pub') }}"
+        state: present
+...

@@ -1,0 +1,60 @@
+---
+# Git URL and version to use, version must be a Git tag
+netbox_version: v3.2.3
+netbox_git_url: https://github.com/netbox-community/netbox.git
+
+# Where to install Netbox
+netbox_install_directory: /opt/netbox
+netbox_virtualenv_path: "{{ netbox_install_directory }}/venv"
+
+# Which user/group should own the files
+netbox_user: netbox
+netbox_group: netbox
+netbox_user_home_directory: /home/netbox
+
+# Mostly used for the first setup, superuser password still need to be set
+netbox_superuser_username: admin
+netbox_superuser_password: admin
+netbox_superuser_email: admin@example.com
+
+# Python local requirements to enable some features such as napalm or plugins
+netbox_local_requirements: []
+
+# LDAP authentication
+netbox_setup_ldap_auth: false
+# LDAP configuration, can be used like
+# netbox_ldap_config: |
+#                     This is my configuration on multiple lines.
+#                     That is pretty simple to do, but maybe painful?
+# Example for LDAP configuration can be found at the following URL:
+# http://netbox.readthedocs.io/en/latest/installation/ldap/
+netbox_ldap_config: ""
+
+# Systemd unit variables (configured by default)
+netbox_setup_systemd: true
+netbox_gunicorn_address: 127.0.0.1
+netbox_gunicorn_port: 8001
+netbox_gunicorn_workers_number: "{{ ansible_processor_vcpus + 1 }}"
+
+# Web frontend variables (not configured by default)
+netbox_setup_web_frontend: false
+
+# Database related variables (password must be changed)
+netbox_database: netbox
+netbox_database_user: netbox
+netbox_database_password: netbox
+netbox_database_host: localhost
+
+# Configuration
+netbox_config:
+  ALLOWED_HOSTS:
+    - localhost
+    - 127.0.0.1
+  MEDIA_ROOT: "{{ netbox_install_directory }}/netbox/media"
+  REPORTS_ROOT: "{{ netbox_install_directory }}/netbox/reports"
+  RQ_DEFAULT_TIMEOUT: 300
+
+# Housekeeping
+netbox_housekeeping: true
+netbox_housekeeping_hour: 4
+netbox_housekeeping_minute: 30

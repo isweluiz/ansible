@@ -1,0 +1,88 @@
+---
+## "tomcat"
+## "gatotom666"
+
+- name: Install tomcat8 and java for apex(ords) 
+  hosts: tomcatapexhmg
+  become: true
+  vars:
+    tomcat_src: /root/files/apache-tomcat-8.5.40.tar.gz
+    tomcat_dest: /opt/
+    java_src: /root/files/java.tar.gz
+    java_dest: /opt/
+    tomcat_opt: /opt/apache-tomcat-8.5.40
+
+    startup_src: /root/files/tomcat-apex
+    startup_dest: /etc/init.d/tomcat-apex
+
+    users_src: /root/files/tomcat-users.xml
+    users_dest:  /opt/apache-tomcat-8.5.40/conf/tomcat-users.xml
+
+    context_src: /root/files/context.xml
+    context_dest: /opt/apache-tomcat-8.5.40/webapps/manager/META-INF/context.xml
+
+  tasks:
+
+    - name: Create group tomcat
+      group:
+        name: tomcat 
+
+    - name: Create user tomcat
+      user:
+        name: tomcat
+        shell: /bin/false
+        comment: 'Tomcat User CJF'
+        group: tomcat 
+
+    - name: Copy tomcat to target
+      unarchive:
+        src: "{{ tomcat_path }}"
+        dest: "{{ tomcat_dest }}"
+        remote_src: no
+        owner: tomcat
+        group: tomcat
+
+#    - name: Copy java to targets
+#      unarchive:
+#        src: "{{ java_src }}"
+#        dest: "{{ java_dest }}"
+#        remote_src: no
+
+    - name: Create link for tomcat
+      file:
+        src: "{{ tomcat_opt }}"
+        dest: /opt/tomcat
+        state: link
+
+    - name: Copy initial script
+      copy:
+        src: "{{ startup_src }}"
+        dest: "{{ startup_dest }}"
+        mode: '775'
+        owner: root
+        group: root
+
+    - name: Copy user.xml
+      copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      with_items:
+        - { src: "{{ users_src }}" , dest: "{{ users_dest }}" }
+        - { src: "{{ context_src }}" , dest: "{{ context_dest }}" }
+
+    - name: Recursive permission
+      file:
+        path: "{{ tomcat_opt }}"
+        recurse: yes
+        owner: tomcat
+        group: tomcat
+
+    - name: Runnn tomcat
+      command: /etc/init.d/tomcat-apex start
+
+    - name: Check status
+      command: /etc/init.d/tomcat-apex status
+      register: apache_check
+    - debug:
+        msg: "{{ apache_check }}"
+...        

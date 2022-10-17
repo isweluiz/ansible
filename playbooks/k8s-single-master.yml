@@ -1,0 +1,12 @@
+---
+- name: "Install and configure K8s single master :: LAB environment"
+  hosts: "workers,masters"
+  become: true 
+  roles:
+    - k8s-single-master
+
+
+# ansible -i inventory/hmg_k8s k8s -m ping
+# ansible-playbook  playbooks/k8s-single-master.yml  --syntax-check
+# ansible-playbook  -i inventory/hmg_k8s playbooks/k8s-single-master.yml -C 
+...    

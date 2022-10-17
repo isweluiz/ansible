@@ -1,0 +1,8 @@
+---
+- name: Default Playbook - Starting Deploy
+  hosts: environment,rabbitmq
+  roles: 
+    - role-common-base 
+
+
+# ansible-playbook -i inventory/hosts -l <> playbooks/role-common.yml 

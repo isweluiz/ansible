@@ -1,0 +1,5 @@
+---
+https_uri: https://download.jboss.org/wildfly/21.0.1.Final/wildfly-21.0.1.Final.zip
+wildfly_user: wildfly
+
+# vars file for isweluiz.wildfly-install

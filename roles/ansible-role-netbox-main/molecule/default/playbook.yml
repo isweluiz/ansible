@@ -1,0 +1,20 @@
+---
+- name: Converge
+  hosts: all
+
+  vars:
+    netbox_setup_ldap_auth: true
+    netbox_setup_web_frontend: true
+    netbox_ldap_config: "AUTH_LDAP_SERVER_URI = '127.0.0.1'"
+
+  pre_tasks:
+    - name: update apt cache
+      apt:
+        update_cache: true
+        cache_valid_time: 600
+      register: package_result
+      until: package_result is success
+      when: ansible_os_family == 'Debian'
+
+  roles:
+    - role: gmazoyer.netbox

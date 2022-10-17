@@ -1,0 +1,28 @@
+---
+galaxy_info:
+  role_name: netbox
+  author: gmazoyer
+  description: A role to install and update NetBox.
+  license: GPL-3+, MIT
+  min_ansible_version: 2.5.0
+  github_branch: main
+  platforms:
+    - name: Debian
+      versions:
+        - bullseye
+    - name: Ubuntu
+      versions:
+        - focal
+        - jammy
+  galaxy_tags:
+    - system
+    - networking
+    - web
+    - database
+    - ipam
+    - dcim
+    - datacenter
+    - django
+
+dependencies: []
+allow_duplicates: true

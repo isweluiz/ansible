@@ -1,0 +1,9 @@
+--- 
+- hosts: webservers 
+  become: yes
+  tasks: 
+    - name: copy file
+      copy:
+        src: /home/isweluiz/index.hml
+        dest: /var/www/html/index.hml
+        #when: ansible_hostname == "msperson3c"

@@ -1,0 +1,29 @@
+---
+- hosts: web-otrs 
+  become: yes
+  tasks: 
+    - name: start and enble the httpd service
+      service:
+      name: httpd
+      state: started 
+      enabled: yes
+    - name: start and enable firewalld service
+      service: 
+      name: firewalld
+      state: started 
+      enabled: yes
+
+---
+- hosts: web-otrs 
+  become: yes
+  tasks: 
+    - name: start and enble the httpd service
+      systemd:
+      name: httpd
+      state: restarted
+      enabled: yes
+    - name: start and enable firewalld service
+      systemd: 
+      name: firewalld
+      state: restarted
+      enabled: yes

@@ -1,0 +1,31 @@
+---
+- name: "Deploy :: RKE k8s cluster" 
+  hosts: k8s
+  become: true
+  vars: 
+    - docker: true
+    - rke: false
+    - helm: false
+    - kubectl: true
+  tasks: 
+    - name: "Include Docker Role"
+      include_role:
+        name: ansible-role-docker
+      when: docker is defined|bool 
+
+    - name: "Include rke Role"
+      include_role:
+        name: ansible-rke-k8s
+      when: rke is defined|bool  
+
+    - name: "Include rke Role"
+      include_role:
+        name: ansible-role-kubectl
+      when: kubectl is defined|bool 
+
+    - name: "Include helm Role"      
+      include_role:
+        name: ansible-role-helm
+      run_once: true 
+      when: helm is defined|bool 
+...

@@ -1,0 +1,154 @@
+---
+- name: "Containerd:: Create containerd config file"
+  file:
+    path: "/etc/modules-load.d/containerd.conf"
+    state: "touch"
+    mode: "0774"
+
+- name: "Containerd:: Add conf for containerd"
+  blockinfile:
+    path: "/etc/modules-load.d/containerd.conf"
+    block: |
+          overlay
+          br_netfilter
+  ignore_errors: "{{ ansible_check_mode }}" 
+
+- name: "Containerd:: modprobe"
+  shell:
+    cmd: |
+         modprobe overlay
+         modprobe br_netfilter
+
+- name: "Containerd:: Set system configurations for Kubernetes networking"
+  file:
+    path: "/etc/sysctl.d/99-kubernetes-cri.conf"
+    state: "touch"
+    mode: "0774"
+
+- name: "Containerd:: Apply sysctl settings"
+  sysctl:
+    name: "{{ item }}"
+    value: '1'
+    sysctl_set: true
+    state: present
+    reload: true
+    sysctl_file: "/etc/sysctl.d/99-kubernetes-cri.conf"
+  with_items:
+    - net.bridge.bridge-nf-call-iptables
+    - net.ipv4.ip_forward
+    - net.bridge.bridge-nf-call-ip6tables 
+
+- name: "Containerd:: Update repo"
+  apt:
+    update_cache: true
+    force_apt_get: true
+    cache_valid_time: 3600
+  ignore_errors: "{{ ansible_check_mode }}" 
+
+- name: "Containerd:: Install containerd"
+  apt:
+    name: "{{ item }}"
+    state: present
+  check_mode: true
+  loop:
+    - containerd
+    - apt-transport-https 
+    - curl
+
+- name: "Containerd:: Create containerd path"
+  file:
+    path: "/etc/containerd"
+    state: directory
+    owner: root
+    mode: 0774
+
+- name: "Containerd:: Containerd config apply"
+  shell:
+    cmd: containerd config default | tee /etc/containerd/config.toml
+
+- name: "Swap:: Disable swap for current session"
+  command: swapoff -a
+
+- name: "Swap::  Disable swap permanently, persist reboots"
+  replace:
+    path: "/etc/fstab"
+    regexp: '^(\s*)([^#\n]+\s+)(\w+\s+)swap(\s+.*)$'
+    replace: '#\1\2\3swap\4'
+    backup: true
+
+- name: "Containerd:: Create k8s path"
+  file:
+    path: "/usr/share/keyrings"
+    state: directory
+    owner: root
+    mode: 0774
+
+- name: "K8s:: Add an Apt signing key"
+  apt_key:
+    url: "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
+    keyring: /usr/share/keyrings/kubernetes-archive-keyring.gpg
+    state: present
+  no_log: true
+
+- name: "K8s:: Create kubernetes repo file"
+  file:
+    path: "/etc/apt/sources.list.d/kubernetes.list"
+    state: "touch"
+    owner: root 
+    mode: 0774
+
+- name: "K8s:: Add specified repository into sources list"
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main"
+    filename: "/etc/apt/sources.list.d/kubernetes.list"
+    state: present
+    update_cache: false
+
+- name: "K8s:: Update repo"
+  apt:
+    update_cache: true
+    force_apt_get: true
+    cache_valid_time: 3600
+  ignore_errors: "{{ ansible_check_mode }}" 
+
+- name: "K8s:: Install K8S"
+  apt:
+    name: "{{ item }}"
+    state: present
+  ignore_errors: "{{ ansible_check_mode }}" 
+  loop:
+    - "{{ k8s_kubelet }}"
+    - "{{ k8s_kubeadm }}"
+    - "{{ k8s_kubectl }}" 
+
+- name: "K8s:: Install K8S"
+  apt:
+    name: "{{ item }}"
+    state: present
+  ignore_errors: "{{ ansible_check_mode }}" 
+  loop:
+    - "{{ k8s_kubelet }}"
+    - "{{ k8s_kubeadm }}"
+    - "{{ k8s_kubectl }}" 
+    
+- name: "K8s:: Hold kubeadm"
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  ignore_errors: "{{ ansible_check_mode }}" 
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: "Docker:: Install docker"
+  apt:
+    name: "{{ item }}"
+    state: present
+  ignore_errors: "{{ ansible_check_mode }}" 
+  loop:
+    - docker
+    - docker-engine
+
+
+...

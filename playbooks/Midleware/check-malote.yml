@@ -1,0 +1,84 @@
+---
+- name: Check malote
+  hosts: localhost
+  tasks:
+    - name: hermez01 8081 | wildfly18java01
+      uri:
+        url: http://172.25.2.40:8081/malotedigital/login.jsf
+        return_content: yes
+        status_code: 200
+      register: malote
+    - debug:
+        msg: "Instância hermez01 Down na porta 8081 | wildfly18java01"
+      when: "'Malote' not in malote.content"
+
+    - name:  hermez02 8082 | wildfly18java01
+      uri:
+        url: http://172.25.2.40:8082/malotedigital/login.jsf
+        return_content: yes
+        status_code: 200
+      register: malote
+    - debug:
+        msg: "Instância hermez02 Down na porta 8082 | wildfly18java01"
+      when: "'Malote' not in malote.content"
+
+    - name:  hermez01 8081 | wildfly18java02
+      uri:
+        url: http://172.25.2.41:8081/malotedigital/login.jsf
+        return_content: yes
+        status_code: 200
+      register: malote
+    - debug:
+        msg: "Instância hermez01 Down na porta 8081 | wildfly18java02"
+      when: "'Malote' not in malote.content"
+
+    - name:  hermez02 8082 | wildfly18java02
+      uri:
+        url: http://172.25.2.41:8082/malotedigital/login.jsf
+        return_content: yes
+        status_code: 200
+      register: malote
+    - debug:
+        msg: "Instância hermez02 Down na porta 8082 | wildfly18java02"
+      when: "'Malote' not in malote.content"
+
+    - name:  hermez01 8081 | wildfly18java03
+      uri:
+        url: http://172.25.2.42:8081/malotedigital/login.jsf
+        return_content: yes
+        status_code: 200
+      register: malote
+    - debug:
+        msg: "Instância hermez01 Down na porta 8081 | wildfly18java02"
+      when: "'Malote' not in malote.content"
+
+    - name:  hermez02 8082 | wildfly18java03
+      uri:
+        url: http://172.25.2.42:8082/malotedigital/login.jsf
+        return_content: yes
+        status_code: 200
+      register: malote
+    - debug:
+        msg: "Instância hermez02 Down na porta 8082 | wildfly18java02"
+      when: "'Malote' not in malote.content"
+
+    - name:  hermez01 8081 | wildfly18java04
+      uri:
+        url: http://172.25.2.43:8081/malotedigital/login.jsf
+        return_content: yes
+        status_code: 200
+      register: malote
+    - debug:
+        msg: "Instância hermez01 Down na porta 8081 | wildfly18java03"
+      when: "'Malote' not in malote.content"
+
+    - name:  hermez02 8082 | wildfly18java04
+      uri:
+        url: http://172.25.2.43:8082/malotedigital/login.jsf
+        return_content: yes
+        status_code: 200
+      register: malote
+    - debug:
+        msg: "Instância hermez02 Down na porta 8081 | wildfly18java03"
+      when: "'Malote' not in malote.content"
+...

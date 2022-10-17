@@ -1,0 +1,24 @@
+---
+- name: Limpando Devices do Gluster Storage
+  hosts: nodes
+  gather_facts: no
+
+  tasks:
+
+    - name: Reiniciando os hosts
+      tags: reboot
+      become: yes
+      become_user: root
+      shell: "sleep 5 && reboot"
+      async: 1
+      poll: 0
+
+    - name: Aguardando pelo reboot e inicialização dos hosts
+      wait_for_connection:
+        connect_timeout: 10
+        sleep: 5
+        delay: 5
+        timeout: 300
+
+    - name: Testa a conexão dos hosts
+      ping:

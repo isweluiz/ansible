@@ -1,0 +1,50 @@
+---
+  - name: check if httpd is installed
+    shell:
+      cmd: rpm -q httpd
+    register: status_httpd
+    failed_when: status_httpd.rc == 1 
+
+  - block: 
+    - name: get get httpd.conf
+      get_url:
+        url: "{{ https_uri }}"
+        dest: /etc/httpd/conf.d/httpd.conf.test
+   
+    - name: create new directory ssl
+      file:
+        path: /etc/httpd/conf.d/ssl
+        state: directory
+        mode: "0755"
+
+    - name: create a new directory logs
+      file:
+        path: /var/www/html/logs
+        state: directory
+        mode: "0755"
+  
+    - name: check directory
+      stat: 
+        path: /etc/httpd/conf.d/ssl.conf
+      register: ssl_check
+
+    - name: rename file
+      command: mv /etc/httpd/conf.d/ssl.conf /etc/httpd/conf.d/ssl.conf.bak
+      when: 
+        - ssl_check.stat.exists
+
+    - name: unarchive
+      unarchive: 
+        src: "{{ ssl_uri }}"
+        dest: /etc/httpd/conf.d/ssl/
+        remote_src: yes
+      notify: 
+        - restart_services 
+
+    - name: create a index
+      copy: 
+        content: "{{ ansible_hostname }} {{ansible_default_ipv4.address }} has been customized bu ansible\n"
+        dest: /var/www/index.html 
+
+    when:
+     - status_httpd.rc ==0

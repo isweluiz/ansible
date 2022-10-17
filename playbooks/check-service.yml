@@ -1,0 +1,27 @@
+---
+- hosts: all
+  serial: 10
+  #connection: local
+  tasks:
+    - name: Populate service facts
+      service_facts:
+
+    - name: Print service facts
+      debug:
+        msg: "SSSD Service is running , {{ ansible_hostname }}"
+      when: ansible_facts.services['sssd.service'] is defined and ansible_facts.services['sssd.service'].state == 'running'
+      changed_when: true
+      register: sssd_is_running    
+
+    - name: Print service facts
+      debug:
+        msg: "SSSD Service is not running"
+      when: ansible_facts.services['sssd.service'] is not defined or ansible_facts.services['sssd.service'].state == 'stopped'    
+      
+  post_tasks:      
+    - name: Copy variable register
+      copy:
+        content: "{{ sssd_is_running }}"
+        dest: "/tmp/sssd_is_running"
+        mode: 0644
+      delegate_to: localhost

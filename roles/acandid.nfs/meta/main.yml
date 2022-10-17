@@ -1,0 +1,21 @@
+dependencies: []
+#
+galaxy_info:
+  author: acandid
+  description: Install and Configure NFS Server Redhat/CentOS 7.
+  company: "Almir Candido"
+  license: "license (BSD, MIT)"
+  min_ansible_version: 2.8
+  platforms:
+    - name: EL
+      versions:
+        - 7
+#
+  galaxy_tags:
+    - nfs
+    - share
+    - linux
+    - centos
+    - redhat
+#
+allow_duplicates: true

@@ -1,0 +1,206 @@
+---
+# Copyright (c) 2017-2020 Guillaume Mazoyer under the GPL
+# Copyright (c) 2017-2018 Musee "lae" Ullah under the MIT License
+- name: check if there is an existing installation
+  ansible.builtin.stat:
+    path: "{{ netbox_install_directory }}"
+  register: netbox_installed
+
+- name: create the install directory
+  ansible.builtin.file:
+    path: "{{ netbox_install_directory }}"
+    owner: "{{ netbox_user }}"
+    group: "{{ netbox_group }}"
+    state: directory
+    mode: 0755
+  when: not netbox_installed.stat.exists
+
+- name: download using git
+  ansible.builtin.git:
+    repo: "{{ netbox_git_url }}"
+    version: "{{ netbox_version }}"
+    dest: "{{ netbox_install_directory }}"
+  become: true
+  become_user: "{{ netbox_user }}"
+  register: netbox_downloaded
+
+- name: upgrade pip in virtualenv
+  ansible.builtin.pip:
+    name:
+      - pip
+      - wheel
+    extra_args: "--upgrade"
+    virtualenv: "{{ netbox_virtualenv_path }}"
+    virtualenv_command: "{{ netbox_python_binary }} -m venv"
+  become: true
+  become_user: "{{ netbox_user }}"
+  register: pip_result
+  until: pip_result is success
+
+- name: install python requirements
+  ansible.builtin.pip:
+    requirements: "{{ netbox_install_directory }}/requirements.txt"
+    extra_args: "--upgrade"
+    virtualenv: "{{ netbox_virtualenv_path }}"
+    virtualenv_command: "{{ netbox_python_binary }} -m venv"
+  become: true
+  become_user: "{{ netbox_user }}"
+  register: pip_result
+  until: pip_result is success
+  notify:
+    - restart netbox
+    - restart netbox rqworker
+  when: netbox_downloaded.changed
+
+- name: generate python local requirements
+  ansible.builtin.template:
+    src: local_requirements.txt.j2
+    dest: "{{ netbox_install_directory }}/local_requirements.txt"
+    owner: "{{ netbox_user }}"
+    group: "{{ netbox_group }}"
+    mode: 0644
+  register: local_requirements_file
+  when: netbox_local_requirements|bool
+
+- name: install local requirements
+  ansible.builtin.pip:
+    requirements: "{{ netbox_install_directory }}/local_requirements.txt"
+    extra_args: "--upgrade"
+    virtualenv: "{{ netbox_virtualenv_path }}"
+    virtualenv_command: "{{ netbox_python_binary }} -m venv"
+  become: true
+  become_user: "{{ netbox_user }}"
+  register: pip_result
+  until: pip_result is success
+  notify:
+    - restart netbox
+    - restart netbox rqworker
+  when: local_requirements_file.changed
+
+- name: setup secret key
+  block:
+  - name: generate a secret key
+    ansible.builtin.shell: "{{ netbox_python_binary }} {{ netbox_install_directory }}/netbox/generate_secret_key.py | tr -d $'\n' > {{ netbox_user_home_directory }}/secret.key"
+    args:
+      creates: "{{ netbox_user_home_directory }}/secret.key"
+    become: true
+    become_user: "{{ netbox_user }}"
+
+  - name: load secret key
+    ansible.builtin.slurp:
+      src: "{{ netbox_user_home_directory }}/secret.key"
+    register: __netbox_secret_key_file
+
+  - name: set secret key in configuration
+    ansible.builtin.set_fact:
+      netbox_config: "{{ netbox_config | combine({'SECRET_KEY': __netbox_secret_key_file['content'] | b64decode}) }}"
+  when: netbox_config.SECRET_KEY is not defined
+
+- name: configure netbox
+  ansible.builtin.template:
+    src: configuration.py.j2
+    dest: "{{ netbox_install_directory }}/netbox/netbox/configuration.py"
+    owner: "{{ netbox_user }}"
+    group: "{{ netbox_group }}"
+    mode: 0644
+  notify:
+    - restart netbox
+    - restart netbox rqworker
+
+- name: setup ldap authentication
+  block:
+  - name: install django-auth-ldap
+    ansible.builtin.pip:
+      name: django-auth-ldap
+      extra_args: "--upgrade"
+      virtualenv: "{{ netbox_virtualenv_path }}"
+      virtualenv_command: "{{ netbox_python_binary }} -m venv"
+    become: true
+    become_user: "{{ netbox_user }}"
+    register: pip_result
+    until: pip_result is success
+  - name: configure ldap auth
+    ansible.builtin.copy:
+      content: "{{ netbox_ldap_config }}"
+      dest: "{{ netbox_install_directory }}/netbox/netbox/ldap_config.py"
+      owner: "{{ netbox_user }}"
+      group: "{{ netbox_group }}"
+      mode: 0644
+    notify:
+      - restart netbox
+  when: netbox_setup_ldap_auth|bool
+
+- name: perform netbox maintenance tasks
+  block:
+  - name: perform database migration
+    community.general.django_manage:
+      app_path: "{{ netbox_install_directory }}/netbox"
+      command: migrate
+      virtualenv: "{{ netbox_virtualenv_path }}"
+    become: true
+    become_user: "{{ netbox_user }}"
+    notify:
+      - restart netbox
+      - restart netbox rqworker
+  - name: remove stale content types
+    community.general.django_manage:
+      app_path: "{{ netbox_install_directory }}/netbox"
+      command: remove_stale_contenttypes --no-input
+      virtualenv: "{{ netbox_virtualenv_path }}"
+    become: true
+    become_user: "{{ netbox_user }}"
+    notify:
+      - restart netbox
+      - restart netbox rqworker
+  - name: remove expired user sessions
+    community.general.django_manage:
+      app_path: "{{ netbox_install_directory }}/netbox"
+      command: clearsessions
+      virtualenv: "{{ netbox_virtualenv_path }}"
+    become: true
+    become_user: "{{ netbox_user }}"
+    notify:
+      - restart netbox
+      - restart netbox rqworker
+  - name: check for missing cable paths
+    community.general.django_manage:
+      app_path: "{{ netbox_install_directory }}/netbox"
+      command: trace_paths --no-input
+      virtualenv: "{{ netbox_virtualenv_path }}"
+    become: true
+    become_user: "{{ netbox_user }}"
+    notify:
+      - restart netbox
+      - restart netbox rqworker
+  - name: build documentation
+    ansible.builtin.command: "{{ netbox_virtualenv_path }}/bin/mkdocs build"
+    args:
+      chdir: "{{ netbox_install_directory }}"
+    become: true
+    become_user: "{{ netbox_user }}"
+  - name: collect static files
+    community.general.django_manage:
+      app_path: "{{ netbox_install_directory }}/netbox"
+      command: collectstatic
+      clear: true
+      virtualenv: "{{ netbox_virtualenv_path }}"
+    become: true
+    become_user: "{{ netbox_user }}"
+  when: netbox_downloaded.changed
+
+- name: setup housekeeping
+  ansible.builtin.cron:
+    name: Housekeeping
+    hour: "{{ netbox_housekeeping_hour }}"
+    minute: "{{ netbox_housekeeping_minute }}"
+    job: "{{ netbox_virtualenv_path }}/bin/python {{ netbox_install_directory }}/netbox/manage.py housekeeping"
+    user: "{{ netbox_user }}"
+    cron_file: netbox
+  when: netbox_housekeeping|bool
+
+- name: create super user
+  ansible.builtin.shell: "printf '{{ netbox_superuser_script }}' | {{ netbox_virtualenv_path }}/bin/python {{ netbox_install_directory }}/netbox/manage.py shell"
+  become: true
+  become_user: "{{ netbox_user }}"
+  register: __netbox_superuser_result
+  changed_when: "'changed' in __netbox_superuser_result.stdout"

@@ -1,0 +1,16 @@
+---
+    - name: Install {{ web_package }} ans {{ ssl_package }}
+      dnf:
+        name: 
+          - "{{ web_package }}"
+          - "{{ ssl_package }}" 
+        state: latest
+      when: 
+        - inventory_hostname in groups['webservers']  and  "{{ ansible_memory_mb.real.total }} > {{ memory }}" 
+
+    - name: start {{ web_package }}
+      systemd: 
+        name: "{{ web_package }}"
+        state: started
+      when: 
+        - inventory_hostname in groups['webservers']

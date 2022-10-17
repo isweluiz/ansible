@@ -1,0 +1,39 @@
+{# Copyright (c) 2017-2018 Musee "lae" Ullah under the MIT License #}
+{# # Copyright (c) 2017-2020 Guillaume Mazoyer under the GPL #}
+# {{ ansible_managed }}
+
+DATABASE = {
+    'NAME': '{{ netbox_database }}',
+    'USER': '{{ netbox_database_user }}',
+    'PASSWORD': '{{ netbox_database_password }}',
+    'HOST': '{{ netbox_database_host }}',
+    'PORT': '{{ netbox_database_port | default('') }}',
+}
+REDIS = {
+    'tasks': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'PASSWORD': '',
+        'DATABASE': 0,
+        'SSL': False,
+    },
+    'caching': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'PASSWORD': '',
+        'DATABASE': 1,
+        'SSL': False,
+    }
+}
+
+{% if netbox_setup_ldap_auth %}
+REMOTE_AUTH_BACKEND = 'netbox.authentication.LDAPBackend'
+{% endif %}
+
+{% for setting, value in netbox_config.items() %}
+{% if value in [True, False] %}
+{{ setting }} = {{ 'True' if value else 'False' }}
+{% else %}
+{{ setting }} = {{ value | to_nice_json }}
+{% endif %}
+{% endfor %}

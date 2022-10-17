@@ -1,0 +1,9 @@
+---
+- name: Start and Enable Services in RedHat family
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop: "{{ nfs_server_services }}"
+  when: ansible_os_family == 'RedHat' and inventory_hostname in groups['nfs_server']
+...

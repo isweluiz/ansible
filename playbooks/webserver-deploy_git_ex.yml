@@ -1,0 +1,47 @@
+---
+- name: Deploy new website
+  hosts: webserver
+  become: true 
+  vars:
+    git_repo: https://github.com/....................
+    var_dest: /var/www/html/
+    httpd_service: httpd 
+  tasks:
+    - name: Deploy | Clone repo on {{ inventory_hostname }}
+      git:
+        repo: "{{ git_repo }}"
+        dest: "{{ var_dest }}"
+        force: yes
+      register: git_deploy
+      tags:
+        - always
+        - deploy 
+
+    - name: Deploy | Start {{ httpd_service }}
+      systemd:
+        name: "{{ httpd_service }}"
+        state: started 
+        enabled: true 
+      register: httpd_start 
+      when: git_deploy.changed
+      tags: 
+        - always
+        - start_http
+
+    - name: Debug | Apache started 
+      uri: 
+        url: http://{{ inventory_hostname }}/
+        return_content: true
+      register: debug_apache
+      when: httpd_start.changed 
+      ignore_errors: yes 
+      tags: 
+        - always
+        - start_http
+    - debug:
+        msg: "{{ debug_apache }}"
+      when: debug_apache.changed
+      tags: 
+        - always
+        - start_http    
+...

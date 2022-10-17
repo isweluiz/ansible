@@ -1,0 +1,11 @@
+---
+- name: Create exposts file
+  template:
+    src: exports.j2
+    dest: /etc/exports
+    group: root
+    owner: root
+    mode: 0644
+#
+- name: Verify configurações file
+  command: exportfs -ra

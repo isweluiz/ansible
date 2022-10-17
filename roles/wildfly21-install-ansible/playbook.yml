@@ -1,0 +1,6 @@
+---
+- hosts: webapp
+  become: true
+  roles:
+    - isweluiz.wildfly-install
+...

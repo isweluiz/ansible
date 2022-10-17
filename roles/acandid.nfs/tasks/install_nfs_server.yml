@@ -1,0 +1,5 @@
+---
+- name: Install NFS Server RedHat family
+  yum:
+    name: "{{ nfs_server_package }}"
+    state: latest

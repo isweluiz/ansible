@@ -1,0 +1,32 @@
+---
+
+# Use a specific version of helm, eg. `3.0.0`. Specify `false` for latest.
+# Please, only helm >= 3.0.0 is supported
+helm_version: false
+
+# Allow role to install OS dependencies.
+helm_install_os_dependencies: true
+
+# Installation directory for helm.
+helm_install_dir: "/opt/helm/bin"
+helm_install_dir_bin: /usr/bin/
+
+# Directory to put K8s projects. Specify `false` to skip.
+helm_projects_dir: "/opt/helm/projects"
+
+# List of K8s projects to be cloned with `git`. See notes in README.md
+# helm_projects: []
+# helm_projects:
+#     - name: elastic-helm-charts                       # Directory name to clone into
+#       repo: git@github.com:elastic/helm-charts        # Repository to clone
+#       update_repo: true                               # Always update local copy of repo
+#       version:  master                                # Check out this version of the repo
+#       force: false                                    # Discard any existing working copy of the repo
+#       #key_file: "{{ ansible_user_dir }}/.ssh/id_rsa"  # Key file to use to clone the repo
+#       recursive: true                                 # Include submodules in clone
+#     - name: rancher-latest                      # Directory name to clone into
+#       repo:  https://releases.rancher.com/server-charts/latest        # Repository to clone
+#       update_repo: true                               # Always update local copy of repo
+#       version:  master                                # Check out this version of the repo
+#       force: false                                    # Discard any existing working copy of the repo
+#       recursive: true                                 # Include submodules in clone

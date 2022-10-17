@@ -1,0 +1,11 @@
+---
+# tasks file for roles/create-user.le
+    - user:
+        name: "{{ item.name }}"
+        group: "{{ item.group }}"
+        shell: "{{ item.shell }}"
+        password: "{{ item.pw | password_hash('sha512') }}"
+      with_items:
+        - "{{ users }}"
+...
+# tasks file for roles/create-user.le

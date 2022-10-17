@@ -1,0 +1,32 @@
+---
+- name: Create user and exchange ssh keys  
+  hosts: all 
+  become: true
+  vars_files: 
+    - ./user-file.yml # vault-file
+  tasks:
+    - name: Create new users 
+      user: 
+        name: "{{ item.name }}"
+        uid: "{{ item.uid }}"
+        comment: "{{ item.comment }}"
+        state: "{{ item.user_state | default ('present') }}" 
+      with_items:
+        - "{{ users }}"
+
+    - name: SSH key transfer 
+      authorized_key:
+        user: "{{ item.name }}"
+        key: "{{ item.ssh_pub }}"
+        state: "{{ item.user_state | default ('present') }}"
+      with_items: 
+        - "{{ users }}"
+
+...
+
+#users:
+#  - name: luiz
+#    uid: 13001
+#    comment: user service 
+#    ssh_pub: "ssh-rsa....."
+#    user_state: present     

@@ -1,0 +1,72 @@
+---
+- name: Deploy malote digital prod HermesWeb
+  become: true
+  hosts: malotedigitalprd
+  vars:
+    hermes: /root/files/malote_prod/malote_ok/cnj-malotedigital-war-HermesWeb.war
+
+    old_deploy_01: /opt/malotedigital/hermez01/deployments/cnj-malotedigital-war-HermesWeb.war
+    old_deploy_02: /opt/malotedigital/hermez02/deployments/cnj-malotedigital-war-HermesWeb.war
+
+    dest_deploy_01: /opt/malotedigital/hermez01/deployments/
+    dest_deploy_02: /opt/malotedigital/hermez02/deployments/
+
+  tasks:
+    - name: Check and remove old deploy hermez01
+      file:
+        path: "{{ old_deploy_01 }}"
+        state: absent
+
+    - name: Check and remove old deploy hermez01
+      file:
+        path: "{{ old_deploy_02 }}"
+        state: absent
+
+    - name: Stop instances
+      shell:
+        cmd: supervisorctl stop wildfly18-hermez01 wildfly18-hermez02
+      register: stop_instances
+
+    - name: copy files to targets hermez01
+      copy:
+        src: "{{ hermes }}"
+        dest: "{{ dest_deploy_01 }}"
+
+    - name: copy files to targets hermez02
+      copy:
+        src: "{{ hermes }}"
+        dest: "{{ dest_deploy_02 }}"
+
+    - name: Start instances
+      shell:
+        cmd: supervisorctl start wildfly18-hermez01 wildfly18-hermez02
+      register: start_instances
+
+- name: Deploy malote digital prod organizacional
+  hosts: malotedigitalprdorganizacional
+  become: true
+  vars:
+      organizacional: /root/files/malote_prod/malote_ok/cnj-malotedigital-war-OrganizacionalWeb.war
+      old_deploy: /opt/malotedigital/organizacional/deployments/cnj-malotedigital-war-OrganizacionalWeb.war
+      dest_deploy: /opt/malotedigital/organizacional/deployments/
+  tasks:
+    - name: Check and remove old deploy hermez01
+      file:
+        path: "{{ old_deploy }}"
+        state: absent
+
+    - name: Stop instances
+      shell:
+        cmd: supervisorctl stop wildfly18-organizacional
+      register: stop_instances
+
+    - name: copy files to targets hermez01
+      copy:
+        src: "{{ organizacional }}"
+        dest: "{{ dest_deploy }}"
+
+    - name: Start instances
+      shell:
+        cmd: supervisorctl start wildfly18-organizacional
+      register: start_instances
+...

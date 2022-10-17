@@ -1,0 +1,149 @@
+description: Admin, all access.
+context:
+  project: '.*' # all projects
+for:
+  resource:
+    - allow: '*' # allow read/create all kinds
+  adhoc:
+    - allow: '*' # allow read/running/killing adhoc jobs
+  job:
+    - equals:
+        group: 'GA404JBOSS'
+        name: 'Efetuar deploy de aj.war.zip'
+      allow: [run,view]
+    - equals:
+        group: 'GA404JBOSS'
+        name: 'Iniciar AJG1 - HCI'
+      allow: [run,view]
+    - equals:
+        group: 'GA404JBOSS'
+        name: 'Parar AJG1 - HCI'
+      allow: [run,view]
+    - equals:
+        group: 'GA404JBOSS'
+        name: 'Upload aj.war.zip'
+      allow: [run,view]
+    - equals:
+        group: 'PHP5APACHE'
+        name: 'Start Apache'
+      allow: [run,view]
+    - equals:
+        group: 'PHP5APACHE'
+        name: 'Stop Apache'
+      allow: [run,view]
+    - equals:
+        group: 'EAP64JBOSS'
+        name: 'Efetuar deploy de ajg2.war'
+      allow: [run,view]
+    - equals:
+        group: 'EAP64JBOSS'
+        name: 'Iniciar AJG2'
+      allow: [run,view]
+    - equals:
+        group: 'EAP64JBOSS'
+        name: 'Parar AJG2'
+      allow: [run,view]
+    - equals:
+        group: 'EAP64JBOSS'
+        name: 'Upload ajg2.war'
+      allow: [run,view]
+    - equals:
+        group: 'sei'
+        name: 'Stop SEI'
+      allow: [run,view]
+    - equals:
+        group: 'sei'
+        name: 'Start SEI'
+      allow: [run,view]
+    - equals:
+        group: 'sei'
+        name: 'Restart SEI'
+      allow: [run,view]
+    - equals:
+        group: 'sei'
+        name: 'Status SEI'
+      allow: [run,view]
+    - equals:
+        group: 'jboss70'
+        name: 'Reiniciar atualizacao CPF e CNPJ'
+      allow: [run,view]
+    - equals:
+        group: 'jboss70'
+        name: 'Matar processo de atualizar'
+      allow: [run]
+    - equals:
+        group: 'TUCUNARE-H'
+        name: 'Upload aj.war.zip'
+      allow: [run,view]
+    - equals:
+        group: 'TUCUNARE-H'
+        name: 'Efetuar deploy de aj.war.zip'
+      allow: [run,view]
+    - equals:
+        group: 'TUCUNARE-H'
+        name: 'Iniciar AJG1 - HMG'
+      allow: [run,view]
+    - equals:
+        group: 'TUCUNARE-H'
+        name: 'Parar AJG1 - HMG'
+      allow: [run,view]
+    - equals:
+        group: 'observatorio'
+        name: 'deploy observatorio'
+      allow: [run,view,read]
+    - equals:
+        group: 'observatorio'
+        name: 'Comitar observatorio'
+      allow: [run,view,read]
+    - equals:
+        group: 'sei'
+        name: 'Restart SEI-H'
+      allow: [run,view,read]
+    - equals:
+        group: 'sei'
+        name: 'Restart SEI-T'
+      allow: [run,view,read]
+    - equals:
+        group: 'jboss70'
+        name: 'Restart Jurisprudencia'
+      allow: [run,view,read]
+    - equals:
+        group: 'AJG2'
+        name: 'Iniciar'
+      allow: [run,view,read]
+    - equals:
+        group: 'AJG2'
+        name: 'Parar'
+      allow: [run,view,read]
+    - equals:
+        group: 'AJG2/Deploy'
+        name: '01 - Upload ajg2.war'
+      allow: [run,view,read]
+    - equals:
+        group: 'AJG2/Deploy'
+        name: '02 - Executar deploy'
+      allow: [run,view,read]
+
+
+  node:
+    - allow: '*' # allow read/run for all nodes
+by:
+  group: rundeck_noc
+
+---
+description: Admin, all access.
+context:
+  application: 'rundeck'
+for:
+  resource:
+    - allow: '*' # allow create of projects
+  project:
+    - allow: '*' # allow view/admin of all projects
+  project_acl:
+    - allow: '*' # allow admin of all project-level ACL policies
+  storage:
+    - allow: '*' # allow read/create/update/delete for all /keys/* storage content
+by:
+  group: rundeck_noc
+
+---

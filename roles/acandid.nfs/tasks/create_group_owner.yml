@@ -1,0 +1,7 @@
+---
+- name: Create group for directory
+  group:
+    name: "{{ nfs_group_name }}"
+    state: present
+    gid: 1010
+...

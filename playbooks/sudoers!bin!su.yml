@@ -1,0 +1,11 @@
+---
+- hosts:  
+#- hosts:  
+  become: true
+  tasks:
+    - name: change line
+      lineinfile:
+        path: /etc/sudoers
+        regexp: "^bmc    ALL=(ALL) NOPASSWD:ALL"
+        backup: yes
+        line: "bmc ALL=ALL, !/bin/su"

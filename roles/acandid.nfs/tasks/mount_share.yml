@@ -1,0 +1,10 @@
+---
+- name: Mount new share
+  mount:
+    path: "{{ nfs_mount_point }}"
+    src: "{{ item }}:/{{ nfs_share }}"
+    state: mounted
+    fstype: nfs4
+  loop:
+    - "{{ groups['nfs_server'][0] }}"
+...
